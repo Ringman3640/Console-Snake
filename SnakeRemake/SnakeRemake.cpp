@@ -143,9 +143,9 @@ void spawnFruit() {
 	}
 
 	//Set X position
-	game::fruitX = std::rand() & (game::gameWidth - 2) + 1; //double check this too
+	game::fruitX = std::rand() % (game::gameWidth - 2) + 1; //double check this too
 	while (onSnakeEntity(game::fruitX, game::fruitY)) {
-		++game::fruitY;
+		++game::fruitX;
 		if (game::fruitX == game::gameWidth - 1) game::fruitX = 1;
 	}
 
@@ -252,14 +252,14 @@ void drawScreen() {
 		std::cout << "X ";
 
 		//Non-occupied row
-		if (snake::bodyPos[i].empty() && i != snake::headY) {
+		if (snake::bodyPos[i].empty() && i != snake::headY && i != game::fruitY) {
 			for (int j = 1; j < game::gameWidth; ++j) std::cout << "  ";
 		}
-
 		//Occupied row
 		else {
 			for (int j = 1; j < game::gameWidth; ++j) {
-				if (onSnakeEntity(j, i)) std::cout << char(254) << ' '; //Only draws snake head and body, not fruit for now
+				if (onSnakeEntity(j, i)) std::cout << char(254) << ' '; //Snake head/body
+				else if (i == game::fruitY && j == game::fruitX) std::cout << "O "; //Fruit
 				else std::cout << "  ";
 			}
 		}
