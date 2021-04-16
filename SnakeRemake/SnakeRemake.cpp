@@ -43,6 +43,9 @@ void checkCollision();
 bool onSnakeEntity(int x, int y);
 void drawScreen();
 
+void endAnimation();
+void endScreen();
+
 
 int main() {
 
@@ -122,6 +125,10 @@ void gameLoop() {
 
 		drawScreen();
 	}
+
+	endAnimation();
+
+	endScreen();
 }
 
 char getInput() {
@@ -209,12 +216,7 @@ void updateBody() {
 }
 
 void checkCollision() {
-	//Check fruit collision
-	if (snake::headX == game::fruitX && snake::headY == game::fruitY) {
-		++snake::length;
-		game::fruitSpawned = false;
-	}
-
+	//Check wall collision
 	//With wall teleports on:
 	if (game::teleportWalls) {
 		if (snake::headX < 1) snake::headX = game::gameWidth - 1;
@@ -222,11 +224,32 @@ void checkCollision() {
 
 		if (snake::headY < 1) snake::headY = game::gameHeight - 1;
 		if (snake::headY > game::gameHeight - 1) snake::headY = 1;
-		return;
 	}
 	//With wall teleports off (game over):
-	if (snake::headX < 1 || snake::headX > game::gameWidth - 1) game::gameEnd = true;
-	if (snake::headY < 1 || snake::headY > game::gameHeight - 1) game::gameEnd = true;
+	else {
+		if (snake::headX < 1 || snake::headX > game::gameWidth - 1) game::gameEnd = true;
+		if (snake::headY < 1 || snake::headY > game::gameHeight - 1) game::gameEnd = true;
+	}
+
+	//Check fruit collision
+	if (snake::headX == game::fruitX && snake::headY == game::fruitY) {
+		++snake::length;
+		game::fruitSpawned = false;
+	}
+	//Check win condition
+	if (snake::length == game::playSpace) {
+		game::gameWin = true;
+		game::gameEnd = true;
+	}
+
+	//Check body collision
+	if (snake::length > 1) {
+		std::cout << "check 1" << std::endl;
+		auto begin = snake::bodyPos[snake::headY].begin();
+		auto end = snake::bodyPos[snake::headY].end();
+		if (std::find(begin, end, snake::headX) != end) game::gameEnd = true;
+	}
+	std::cout << "out check" << std::endl;
 }
 
 bool onSnakeEntity(int x, int y) {
@@ -276,4 +299,33 @@ void drawScreen() {
 	std::cout << "Length: " << snake::length << std::endl;
 	std::cout << "\nFruit X: " << game::fruitX << std::endl;
 	std::cout << "Fruit Y: " << game::fruitY;
+}
+
+void endAnimation() {
+	Sleep(1000);
+
+	while (snake::length > 1) {
+		snake::headY = snake::bodyYOrder.front();
+		snake::headX = snake::bodyPos[snake::headY].front();
+
+		snake::bodyPos[snake::headY].pop_front();
+		snake::bodyYOrder.pop_front();
+
+		--snake::length;
+		drawScreen();
+	}
+
+	snake::headX = 0;
+	snake::headY = 0;
+	drawScreen();
+}
+
+void endScreen() {
+	std::system("CLS");
+	if (game::gameWin) {
+		//Win screen
+	}
+	else {
+		//Lose screen
+	}
 }
