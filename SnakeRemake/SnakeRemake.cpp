@@ -52,9 +52,9 @@ int main() {
 
 	loadSettings();
 
-	initializeSettings();
-
 	startScreen();
+
+	initializeSettings();
 
 	gameLoop();
 
@@ -93,6 +93,20 @@ void setDefault() {
 }
 
 void initializeSettings() {
+	//Settings checks
+	if (snake::headX <= 0) snake::headX = 1;
+	if (snake::headY <= 0) snake::headY = 1;
+
+	if (game::gameWidth <= 4) game::gameWidth = 10;
+	if (game::gameWidth > 40) game::gameWidth = 20;
+	if (game::gameHeight <= 4) game::gameHeight = 10;
+	if (game::gameHeight > 40) game::gameHeight = 20;
+	
+
+	if (snake::headX >= game::gameWidth) snake::headX = 1;
+	if (snake::headY >= game::gameHeight) snake::headY = 1;
+
+	//Initializations
 	snake::bodyPos.resize(game::gameHeight);
 	std::srand(std::time(NULL));
 	game::playSpace = (game::gameWidth - 2) * (game::gameHeight - 2);
@@ -100,25 +114,35 @@ void initializeSettings() {
 
 void startScreen() {
 	Menu startScreen("SNAKE");
-	Menu settings("SNAKE > Settings");
-	Text controls("Snake > Controls");
-	Text credits("SNAKE > Credits");
 
+	Menu settings("SNAKE > Settings");
 	Modifier modSnakeX(snake::headX, "SNAKE > Settings > Change Starting X Position", "Enter new value: ");
 	Modifier modSnakeY(snake::headY, "SNAKE > Settings > Change Starting Y Position", "Enter new value: ");
 	Modifier modWidth(game::gameWidth, "SNAKE > Settings > Game Width", "Enter new width: ");
 	Modifier modHeight(game::gameHeight, "SNAKE > Settings > Game Height", "Enter new Height: ");
+	Custom resetSettings(std::string(), []() { setDefault(); });
+
+	Text controls("Snake > Controls");
+	Text credits("SNAKE > Credits");
 
 	startScreen.addExit("Play");
 	startScreen.addStaticEntry("Settings", settings);
 	startScreen.addStaticEntry("Controls", controls);
 	startScreen.addStaticEntry("Credits", credits);
+	startScreen.exitAction([]() {
+		saveSettings();
+	});
 
 	settings.addVariableEntry("Starting X Position: ", snake::headX, modSnakeX);
 	settings.addVariableEntry("Starting Y Position: ", snake::headY, modSnakeY);
 	settings.addVariableEntry("Playspace Width: ", game::gameWidth, modWidth);
 	settings.addVariableEntry("Playspace Height: ", game::gameHeight, modHeight);
+	settings.addStaticEntry("Reset to defaults", resetSettings);
 	settings.addExit("Return");
+
+	controls.setText("To be added . . . ");
+
+	credits.setText("Programmer: Franz Alarcon \nTo be added . . . ");
 
 	startScreen.start();
 }
@@ -262,12 +286,10 @@ void checkCollision() {
 
 	//Check body collision
 	if (snake::length > 1) {
-		std::cout << "check 1" << std::endl;
 		auto begin = snake::bodyPos[snake::headY].begin();
 		auto end = snake::bodyPos[snake::headY].end();
 		if (std::find(begin, end, snake::headX) != end) game::gameEnd = true;
 	}
-	std::cout << "out check" << std::endl;
 }
 
 bool onSnakeEntity(int x, int y) {
