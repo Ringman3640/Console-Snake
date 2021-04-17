@@ -71,13 +71,11 @@ void loadSettings() {
 		return;
 	}
 
-	std::cin >> snake::headX; //double check these later
-	std::cin >> snake::headY;
+	fin >> snake::headX; //double check these later
+	fin >> snake::headY;
 
-	if (fin.get() == 1) game::teleportWalls = true;
-	else game::teleportWalls = false;
-	std::cin >> game::gameWidth;
-	std::cin >> game::gameHeight;
+	fin >> game::gameWidth;
+	fin >> game::gameHeight;
 
 	fin.close();
 }
@@ -110,6 +108,7 @@ void initializeSettings() {
 	snake::bodyPos.resize(game::gameHeight);
 	std::srand(std::time(NULL));
 	game::playSpace = (game::gameWidth - 2) * (game::gameHeight - 2);
+	game::teleportWalls = true; //Option to change this in settings will be added later
 }
 
 void startScreen() {
@@ -148,7 +147,13 @@ void startScreen() {
 }
 
 void saveSettings() {
-	std::ofstream fout;
+	std::ofstream fout("settings.txt");
+
+	fout << snake::headX << ' ';
+	fout << snake::headY << ' ';
+
+	fout << game::gameWidth << ' ';
+	fout << game::gameHeight;
 
 	fout.close();
 }
