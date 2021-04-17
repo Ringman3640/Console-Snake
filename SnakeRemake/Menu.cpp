@@ -79,6 +79,8 @@ void Menu::start() {
 		}
 	}
 	std::system("CLS");
+
+	postExecute();
 }
 
 void Menu::drawScreen() {
@@ -107,7 +109,7 @@ void Menu::addStaticEntry(std::string text) {
 	subScreens.push_back(nullptr);
 	++entryCount;
 }
-void Menu::addStaticEntry(std::string text, Screen &entryAction) {
+void Menu::addStaticEntry(std::string text, Screen& entryAction) {
 	menuEntries.push_back(text);
 	subScreens.push_back(&entryAction);
 	++entryCount;
@@ -118,23 +120,27 @@ void Menu::addVariableEntry(std::string text, int& variable) {
 	subScreens.push_back(nullptr);
 	++entryCount;
 }
-void Menu::addVariableEntry(std::string text, int& variable, Screen &entryAction) {
+void Menu::addVariableEntry(std::string text, int& variable, Screen& entryAction) {
 	menuEntries.push_back(Entry(text, true, &variable));
 	subScreens.push_back(&entryAction);
 	++entryCount;
 }
 
+void Menu::exitAction(void(*func)()) {
+	postExecute = func;
+}
+
 
 //Modifier Class
-Modifier::Modifier(int *inValue, std::string header, std::string text)
-	:value{ inValue }, headerText { header }, modifierText{ text } {
+Modifier::Modifier(int* inValue, std::string header, std::string text)
+	:value{ inValue }, headerText{ header }, modifierText{ text } {
 
 }
 
 void Modifier::start() {
 	int inputVal;
 	drawScreen();
-	
+
 	while (!(std::cin >> inputVal)) {
 		std::cout << std::endl;
 		std::cout << "Invalid value type, enter an integer value: ";
@@ -158,7 +164,7 @@ void Modifier::drawScreen() {
 
 //Text Class
 Text::Text(std::string header, std::string body)
-	: headerText{ header }, bodyText { body } {
+	: headerText{ header }, bodyText{ body } {
 
 }
 

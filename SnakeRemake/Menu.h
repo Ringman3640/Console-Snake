@@ -30,23 +30,26 @@ public:
 
 	void addExit(std::string text);
 	void addStaticEntry(std::string text);
-	void addStaticEntry(std::string text, Screen &entryAction);
-	void addVariableEntry(std::string text, int &variable);
-	void addVariableEntry(std::string text, int &variable, Screen &entryAction);
+	void addStaticEntry(std::string text, Screen& entryAction);
+	void addVariableEntry(std::string text, int& variable);
+	void addVariableEntry(std::string text, int& variable, Screen& entryAction);
+
+	void exitAction(void(*func)());
 
 private:
 	struct Entry {
 		std::string entryText;
-		int *entryVal;
+		int* entryVal;
 		bool isVar;
 
-		Entry(std::string text, bool isVar = false, int *val = nullptr) 
+		Entry(std::string text, bool isVar = false, int* val = nullptr)
 			: entryText{ text }, entryVal{ val }, isVar{ isVar } { }
 	};
 
 	std::vector<Entry> menuEntries;
 	std::vector<Screen*> subScreens;
 	std::string headerText;
+	void(*postExecute)() = []() { return; };
 	int entryCount = 0;
 	int cursorLoc = 0;
 	int exitLoc = -1;
@@ -56,13 +59,13 @@ private:
 
 class Modifier : public Screen {
 public:
-	Modifier(int *inValue, std::string header, std::string text = "Enter new value: ");
+	Modifier(int* inValue, std::string header, std::string text = "Enter new value: ");
 
 	void start();
 	void drawScreen();
 
 private:
-	int *value;
+	int* value;
 	std::string headerText;
 	std::string modifierText;
 };
