@@ -78,7 +78,6 @@ void loadSettings() {
 	else game::teleportWalls = false;
 	std::cin >> game::gameWidth;
 	std::cin >> game::gameHeight;
-	game::playSpace = (game::gameWidth - 2) * (game::gameHeight - 2);
 
 	fin.close();
 }
@@ -96,6 +95,7 @@ void setDefault() {
 void initializeSettings() {
 	snake::bodyPos.resize(game::gameHeight);
 	std::srand(std::time(NULL));
+	game::playSpace = (game::gameWidth - 2) * (game::gameHeight - 2);
 }
 
 void startScreen() {
@@ -104,14 +104,21 @@ void startScreen() {
 	Text controls("Snake > Controls");
 	Text credits("SNAKE > Credits");
 
-	Modifier snakeStartX(snake::headX, "SNAKE > Settings > Change Starting X Position", "Enter new value");
+	Modifier modSnakeX(snake::headX, "SNAKE > Settings > Change Starting X Position", "Enter new value: ");
+	Modifier modSnakeY(snake::headY, "SNAKE > Settings > Change Starting Y Position", "Enter new value: ");
+	Modifier modWidth(game::gameWidth, "SNAKE > Settings > Game Width", "Enter new width: ");
+	Modifier modHeight(game::gameHeight, "SNAKE > Settings > Game Height", "Enter new Height: ");
 
 	startScreen.addExit("Play");
 	startScreen.addStaticEntry("Settings", settings);
 	startScreen.addStaticEntry("Controls", controls);
 	startScreen.addStaticEntry("Credits", credits);
 
-	settings.addVariableEntry("Starting X Position", snake::headX);
+	settings.addVariableEntry("Starting X Position: ", snake::headX, modSnakeX);
+	settings.addVariableEntry("Starting Y Position: ", snake::headY, modSnakeY);
+	settings.addVariableEntry("Playspace Width: ", game::gameWidth, modWidth);
+	settings.addVariableEntry("Playspace Height: ", game::gameHeight, modHeight);
+	settings.addExit("Return");
 
 	startScreen.start();
 }
