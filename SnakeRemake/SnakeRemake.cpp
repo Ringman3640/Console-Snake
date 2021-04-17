@@ -71,7 +71,7 @@ void loadSettings() {
 		return;
 	}
 
-	fin >> snake::headX; //double check these later
+	fin >> snake::headX;
 	fin >> snake::headY;
 
 	fin >> game::gameWidth;
@@ -190,14 +190,14 @@ void spawnFruit() {
 	if (game::fruitSpawned) return;
 
 	//Set Y position
-	game::fruitY = std::rand() % (game::gameHeight - 2) + 1; //double check these values
+	game::fruitY = std::rand() % (game::gameHeight - 2) + 1;
 	while (snake::bodyPos[game::fruitY].size() == game::gameWidth - 2) {
 		++game::fruitY;
 		if (game::fruitY == game::gameHeight - 1) game::fruitY = 1;
 	}
 
 	//Set X position
-	game::fruitX = std::rand() % (game::gameWidth - 2) + 1; //double check this too
+	game::fruitX = std::rand() % (game::gameWidth - 2) + 1;
 	while (onSnakeEntity(game::fruitX, game::fruitY)) {
 		++game::fruitX;
 		if (game::fruitX == game::gameWidth - 1) game::fruitX = 1;
@@ -367,10 +367,13 @@ void endAnimation() {
 
 void endScreen() {
 	std::system("CLS");
+	std::cin.ignore(9999, '\n');
 	if (game::gameWin) {
-		//Win screen
+		Text gameWin(std::string(), "\n\n\nCongratulations!\n\n\n");
+		gameWin.start();
 	}
 	else {
-		//Lose screen
+		Text gameOver(std::string(), "\n\n\nGAME OVER\n\n\n");
+		gameOver.start();
 	}
 }
