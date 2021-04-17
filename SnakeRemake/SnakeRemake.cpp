@@ -33,6 +33,7 @@ void loadSettings();
 void setDefault();
 void initializeSettings();
 void startScreen();
+void saveSettings();
 
 void gameLoop();
 char getInput();
@@ -103,12 +104,22 @@ void startScreen() {
 	Text controls("Snake > Controls");
 	Text credits("SNAKE > Credits");
 
+	Modifier snakeStartX(snake::headX, "SNAKE > Settings > Change Starting X Position", "Enter new value");
+
 	startScreen.addExit("Play");
 	startScreen.addStaticEntry("Settings", settings);
 	startScreen.addStaticEntry("Controls", controls);
 	startScreen.addStaticEntry("Credits", credits);
 
+	settings.addVariableEntry("Starting X Position", snake::headX);
+
 	startScreen.start();
+}
+
+void saveSettings() {
+	std::ofstream fout;
+
+	fout.close();
 }
 
 void gameLoop() {

@@ -59,7 +59,7 @@ private:
 
 class Modifier : public Screen {
 public:
-	Modifier(int* inValue, std::string header, std::string text = "Enter new value: ");
+	Modifier(int& inValue, std::string header, std::string text = "Enter new value: ");
 
 	void start();
 	void drawScreen();

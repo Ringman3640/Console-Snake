@@ -132,8 +132,8 @@ void Menu::exitAction(void(*func)()) {
 
 
 //Modifier Class
-Modifier::Modifier(int* inValue, std::string header, std::string text)
-	:value{ inValue }, headerText{ header }, modifierText{ text } {
+Modifier::Modifier(int& inValue, std::string header, std::string text)
+	:value{ &inValue }, headerText{ header }, modifierText{ text } {
 
 }
 
