@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <random>
 #include <ctime>
+#include <utility>
 
 #define UP 'W'
 #define DOWN 'S'
@@ -14,14 +15,15 @@
 #define CLEAR '\0'
 
 namespace snake {
+	std::list<std::pair<int, int>> bodyQueue;
 	int headX, headY, length = 1;
 	int prevX = 0, prevY = 0;
 	int tailX = 0, tailY = 0;
-	std::vector<std::list<int>> bodyPos;
-	std::list<int> bodyYOrder;
 }
 
 namespace game {
+	std::vector<std::vector<short>> board; //0 for empty, 1 for head, 2 for body, 3 for fruit
+	std::vector<int> yEntities;
 	bool gameEnd = false, gameWin = false, fruitSpawned = false;
 	int fruitX = 0, fruitY = 0;
 	char prevMove = CLEAR;
@@ -41,7 +43,6 @@ void spawnFruit();
 void updateHead();
 void updateBody();
 void checkCollision();
-bool onSnakeEntity(int x, int y);
 void drawScreen();
 
 void endAnimation();
@@ -95,20 +96,25 @@ void initializeSettings() {
 	if (snake::headX <= 0) snake::headX = 1;
 	if (snake::headY <= 0) snake::headY = 1;
 
-	if (game::gameWidth <= 4) game::gameWidth = 10;
-	if (game::gameWidth > 40) game::gameWidth = 20;
-	if (game::gameHeight <= 4) game::gameHeight = 10;
-	if (game::gameHeight > 40) game::gameHeight = 20;
+	if (game::gameWidth <= 4) game::gameWidth = 5;
+	if (game::gameWidth > 40) game::gameWidth = 40;
+	if (game::gameHeight <= 4) game::gameHeight = 5;
+	if (game::gameHeight > 40) game::gameHeight = 40;
 	
 
 	if (snake::headX >= game::gameWidth) snake::headX = 1;
 	if (snake::headY >= game::gameHeight) snake::headY = 1;
 
 	//Initializations
-	snake::bodyPos.resize(game::gameHeight);
+	game::yEntities.resize(game::gameHeight);
+	game::board.resize(game::gameHeight);
+	for (int i = 0; i < game::gameHeight; ++i) {
+		game::board[i].resize(game::gameWidth);
+	}
+
 	std::srand(std::time(NULL));
 	game::playSpace = (game::gameWidth - 2) * (game::gameHeight - 2);
-	game::teleportWalls = true; //Option to change this in settings will be added later
+	game::teleportWalls = true; //Option to change this in settings will be added later, need to edit Menu class
 }
 
 void startScreen() {
@@ -191,23 +197,28 @@ void spawnFruit() {
 
 	//Set Y position
 	game::fruitY = std::rand() % (game::gameHeight - 2) + 1;
-	while (snake::bodyPos[game::fruitY].size() == game::gameWidth - 2) {
+	while (game::yEntities[game::fruitY] >= game::gameHeight - 2) {
 		++game::fruitY;
 		if (game::fruitY == game::gameHeight - 1) game::fruitY = 1;
 	}
 
 	//Set X position
 	game::fruitX = std::rand() % (game::gameWidth - 2) + 1;
-	while (onSnakeEntity(game::fruitX, game::fruitY)) {
+	while (game::board[game::fruitY][game::fruitX] != 0) {
 		++game::fruitX;
 		if (game::fruitX == game::gameWidth - 1) game::fruitX = 1;
 	}
+
+	//Set in board
+	game::board[game::fruitY][game::fruitX] = 3;
+	++game::yEntities[game::fruitY];
 
 	game::fruitSpawned = true;
 }
 
 void updateHead() {
 	char input = getInput();
+	bool updatePrev = true;
 	if (input == CLEAR) input = game::prevMove;
 
 	snake::prevX = snake::headX;
@@ -218,7 +229,7 @@ void updateHead() {
 		if (game::prevMove != DOWN) ++snake::headY;
 		else {
 			--snake::headY;
-			return;
+			updatePrev = false;
 		}
 		break;
 
@@ -226,7 +237,7 @@ void updateHead() {
 		if (game::prevMove != UP) --snake::headY;
 		else {
 			++snake::headY;
-			return;
+			updatePrev = false;
 		}
 		break;
 
@@ -234,7 +245,7 @@ void updateHead() {
 		if (game::prevMove != LEFT) ++snake::headX;
 		else {
 			--snake::headX;
-			return;
+			updatePrev = false;
 		}
 		break;
 
@@ -242,23 +253,32 @@ void updateHead() {
 		if (game::prevMove != RIGHT) --snake::headX;
 		else {
 			++snake::headX;
-			return;
+			updatePrev = false;
 		}
 		break;
 	}
+	if (updatePrev) game::prevMove = input;
 
-	game::prevMove = input;
+	//Board updates in checkCollision function
 }
 
 void updateBody() {
 	//Move body forwards
-	snake::bodyPos[snake::prevY].push_front(snake::prevX);
-	snake::bodyYOrder.push_front(snake::prevY);
+	if (snake::length > 1) {
+		game::board[snake::prevY][snake::prevX] = 2;
+		snake::bodyQueue.emplace_front(snake::prevX, snake::prevY);
+	}
 
 	//Remove Tail
-	if (snake::bodyYOrder.size() == snake::length) {
-		snake::bodyPos[snake::bodyYOrder.back()].pop_back();
-		snake::bodyYOrder.pop_back();
+	if (snake::length == 1) {
+		game::board[snake::prevY][snake::prevX] = 0;
+	}
+	else if (snake::bodyQueue.size() == snake::length) {
+		int yPos = snake::bodyQueue.back().second;
+		int xPos = snake::bodyQueue.back().first;
+		game::board[yPos][xPos] = 0;
+		--game::yEntities[yPos];
+		snake::bodyQueue.pop_back();
 	}
 }
 
@@ -281,6 +301,7 @@ void checkCollision() {
 	//Check fruit collision
 	if (snake::headX == game::fruitX && snake::headY == game::fruitY) {
 		++snake::length;
+		--game::yEntities[game::fruitY];
 		game::fruitSpawned = false;
 	}
 	//Check win condition
@@ -290,25 +311,16 @@ void checkCollision() {
 	}
 
 	//Check body collision
-	if (snake::length > 1) {
-		auto begin = snake::bodyPos[snake::headY].begin();
-		auto end = snake::bodyPos[snake::headY].end();
-		if (std::find(begin, end, snake::headX) != end) game::gameEnd = true;
-	}
-}
+	if (game::board[snake::headY][snake::headX] == 2) game::gameEnd = true;
 
-bool onSnakeEntity(int x, int y) {
-	//On head
-	if (x == snake::headX && y == snake::headY) return true;
-
-	//On body
-	auto begin = snake::bodyPos[y].begin();
-	auto end = snake::bodyPos[y].end();
-	if (std::find(begin, end, x) != end) return true;
-	return false;
+	//Update head position in board
+	game::board[snake::headY][snake::headX] = 1;
+	++game::yEntities[snake::headY];
 }
 
 void drawScreen() {
+	char symbols[4] = { ' ', char(254), char(254), 'O' };
+
 	std::system("CLS");
 
 	//Top boarder
@@ -320,15 +332,13 @@ void drawScreen() {
 		std::cout << "X ";
 
 		//Non-occupied row
-		if (snake::bodyPos[i].empty() && i != snake::headY && i != game::fruitY) {
+		if (game::yEntities[i] == 0)
 			for (int j = 1; j < game::gameWidth; ++j) std::cout << "  ";
-		}
+
 		//Occupied row
 		else {
 			for (int j = 1; j < game::gameWidth; ++j) {
-				if (onSnakeEntity(j, i)) std::cout << char(254) << ' '; //Snake head/body
-				else if (i == game::fruitY && j == game::fruitX) std::cout << "O "; //Fruit
-				else std::cout << "  ";
+				std::cout << symbols[game::board[i][j]] << ' ';
 			}
 		}
 
@@ -346,15 +356,26 @@ void drawScreen() {
 	std::cout << "Fruit Y: " << game::fruitY;
 }
 
+//drawScreen function for debugging, prints game::board values
+//void drawScreen() {
+//	std::system("CLS");
+//
+//	for (int i = game::gameHeight - 1; i >= 0; --i) {
+//		for (int j = 0; j < game::gameWidth; ++j) {
+//			std::cout << game::board[i][j] << ' ';
+//		}
+//		std::cout << std::endl;
+//	}
+//}
+
 void endAnimation() {
 	Sleep(1000);
 
 	while (snake::length > 1) {
-		snake::headY = snake::bodyYOrder.front();
-		snake::headX = snake::bodyPos[snake::headY].front();
-
-		snake::bodyPos[snake::headY].pop_front();
-		snake::bodyYOrder.pop_front();
+		game::board[snake::headY][snake::headX] = 0;
+		snake::headY = snake::bodyQueue.front().second;
+		snake::headX = snake::bodyQueue.front().first;
+		snake::bodyQueue.pop_front();
 
 		--snake::length;
 		drawScreen();
@@ -367,7 +388,7 @@ void endAnimation() {
 
 void endScreen() {
 	std::system("CLS");
-	std::cin.ignore(9999, '\n');
+	//std::cin.ignore(9999, '\n');
 	if (game::gameWin) {
 		Text gameWin(std::string(), "\n\n\nCongratulations!\n\n\n");
 		gameWin.start();
