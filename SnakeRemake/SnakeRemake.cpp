@@ -118,7 +118,7 @@ void initializeSettings() {
 }
 
 void startScreen() {
-	Menu startScreen("SNAKE");
+	Menu startScreen("");
 
 	Menu settings("SNAKE > Settings");
 	Modifier modSnakeX(snake::headX, "SNAKE > Settings > Change Starting X Position", "Enter new value: ");
@@ -129,6 +129,18 @@ void startScreen() {
 
 	Text controls("Snake > Controls");
 	Text credits("SNAKE > Credits");
+
+	startScreen.drawAction([]() {
+		std::cout << "   ______    __      _    ___          _    __   _______       \n";
+		std::cout << "  / _____|  |  \\    | |  |   \\        | |  / /  |  _____|    \n";
+		std::cout << " | |        |   \\   | |  | |\\ \\       | | / /   | |         \n";
+		std::cout << "  \\ \\       | |\\ \\  | |  | |_\\ \\      | |/ /    | |___   \n";
+		std::cout << "    \\ \\     | | \\ \\ | |  |  ___ \\     |   |     |  ___|   \n";
+		std::cout << "      \\ \\   | |  \\ \\| |  | |   \\ \\    | |\\ \\    | |    \n";
+		std::cout << "  _____| |  | |   \\   |  | |    \\ \\   | | \\ \\   | |_____  \n";
+		std::cout << " |______/   |_|    \\__|  |_|     \\_\\  |_|  \\_\\  |_______| \n";
+		std::cout << " --------------------------------------------------------        ";
+		});
 
 	startScreen.addExit("Play");
 	startScreen.addStaticEntry("Settings", settings);
