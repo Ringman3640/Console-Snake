@@ -34,6 +34,8 @@ public:
 	void addVariableEntry(std::string text, int& variable);
 	void addVariableEntry(std::string text, int& variable, Screen& entryAction);
 
+	void startAction(void(*func)());
+	void drawAction(void(*func)());
 	void exitAction(void(*func)());
 
 private:
@@ -49,6 +51,8 @@ private:
 	std::vector<Entry> menuEntries;
 	std::vector<Screen*> subScreens;
 	std::string headerText;
+	void(*preExecute)() = []() { return; };
+	void(*drawExecute)() = []() { return; };
 	void(*postExecute)() = []() { return; };
 	int entryCount = 0;
 	int cursorLoc = 0;
@@ -89,6 +93,8 @@ private:
 class Custom : public Screen {
 public:
 	Custom(std::string header, void(*lambda)() = [] { return; });
+
+	void setAction(void(*func)());
 
 	void start();
 

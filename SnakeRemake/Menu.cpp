@@ -51,6 +51,8 @@ void Menu::start() {
 	cursorLoc = 0;
 	bool exit = false;
 
+	preExecute();
+
 	while (!exit) {
 		if (updateScreen) drawScreen();
 
@@ -86,7 +88,10 @@ void Menu::start() {
 void Menu::drawScreen() {
 	std::system("CLS");
 
-	std::cout << headerText << std::endl << std::endl;
+	std::cout << headerText;
+	drawExecute();
+	std::cout << std::endl << std::endl;
+
 	for (int i = 0; i < entryCount; ++i) {
 		if (i == cursorLoc) std::cout << " > ";
 		std::cout << menuEntries[i].entryText;
@@ -124,6 +129,14 @@ void Menu::addVariableEntry(std::string text, int& variable, Screen& entryAction
 	menuEntries.push_back(Entry(text, true, &variable));
 	subScreens.push_back(&entryAction);
 	++entryCount;
+}
+
+void Menu::startAction(void(*func)()) {
+	preExecute = func;
+}
+
+void Menu::drawAction(void(*func)()) {
+	drawExecute = func;
 }
 
 void Menu::exitAction(void(*func)()) {
@@ -199,4 +212,8 @@ void Custom::start() {
 	std::system("CLS");
 	std::cout << headerText << std::endl << std::endl;
 	lambdaFunc();
+}
+
+void Custom::setAction(void(*func)()) {
+	lambdaFunc = func;
 }
